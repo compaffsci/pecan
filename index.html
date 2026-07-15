@@ -48,8 +48,6 @@
   const subject_id = jsPsych.randomization.randomID(10);
   const filename = `${subject_id}.json`;
 
-  var timeline = [];
-
   const jsPsych = initJsPsych({
     on_finish: function() {
       jsPsych.data.displayData();
@@ -115,7 +113,12 @@
     fullscreen_mode: false
   };
 
-  timeline.push(preload,enter_fullscreen,video_trial,exit_fullscreen);
-  jsPsych.run(timeline)
+ jsPsych.run([
+    preload,
+    enter_fullscreen,
+    video_trial,
+    exit_fullscreen
+  ]);
+  
 </script>
 </html>
