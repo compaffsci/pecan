@@ -870,12 +870,21 @@ const filename = `${subject_id}.csv`;
     delay_after: 0
   };
 
+  const save_data = {
+  type: jsPsychPipe,
+  action: "save",
+  experiment_id: "uU4CHDW9KZ8J",
+  filename: filename,
+  data_string: ()=>jsPsych.data.get().csv()
+};
+
   jsPsych.run([
     preload,
     enter_fullscreen,
     instructions_page,
     dominance_trial,
-    exit_fullscreen
+    exit_fullscreen,
+    save_data
   ]);
 </script>
 </html>
