@@ -291,6 +291,9 @@
     Example:
     const VIDEO_FILE = "stimuli/filmato.mp4";
   */
+const subject_id = jsPsych.randomization.randomID(10);
+const filename = `${subject_id}.csv`;
+  
   const VIDEO_FILE = "filmato.mp4";
 
   const jsPsych = initJsPsych({
