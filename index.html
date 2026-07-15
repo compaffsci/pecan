@@ -2,281 +2,32 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Dominance Video Task</title>
+  <title>Simple Video Task</title>
 
   <!-- jsPsych v8 -->
   <script src="https://unpkg.com/jspsych@8.2.1"></script>
-  <script src="https://unpkg.com/@jspsych/plugin-fullscreen@2.1.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-preload@2.1.0"></script>
-  <script src="https://unpkg.com/@jspsych/plugin-html-button-response@2.1.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-fullscreen@2.1.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-video-keyboard-response@2.1.0"></script>
   <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe"></script>
+
 
   <link href="https://unpkg.com/jspsych@8.2.1/css/jspsych.css" rel="stylesheet" type="text/css" />
 
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
+    body {
       background: #111;
-    }
-
-    body.hide-cursor,
-    body.hide-cursor * {
-      cursor: none !important;
-    }
-
-    .jspsych-content-wrapper {
-      width: 100vw;
-      height: 100vh;
+      color: white;
     }
 
     .jspsych-content {
       max-width: 100vw;
-      width: 100vw;
-      height: 100vh;
     }
 
-    /*
-      =========================================================
-      INSTRUCTION PAGE
-      =========================================================
-    */
-
-    #instruction-page {
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #111;
-      color: white;
-      font-family: Arial, sans-serif;
-      box-sizing: border-box;
-      padding: 60px;
-    }
-
-    #instruction-box {
-      max-width: 900px;
-      text-align: left;
-      font-size: 22px;
-      line-height: 1.5;
-    }
-
-    #instruction-box h1 {
-      font-size: 38px;
-      margin-bottom: 30px;
-    }
-
-    #instruction-box ul {
-      margin-top: 20px;
-      margin-bottom: 30px;
-    }
-
-    #instruction-box li {
-      margin-bottom: 14px;
-    }
-
-    #instruction-button-container {
-      text-align: center;
-      margin-top: 35px;
-    }
-
-    .jspsych-btn {
-      font-size: 22px;
-      padding: 14px 34px;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-
-    /*
-      =========================================================
-      DOMINANCE VIDEO TASK
-      =========================================================
-    */
-
-    #dominance-task {
-      width: 100vw;
-      height: 100vh;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 280px;
-      gap: 30px;
-      align-items: center;
-      box-sizing: border-box;
-      padding: 30px;
-      background: #111;
-      color: white;
-      font-family: Arial, sans-serif;
-    }
-
-    #video-panel {
-      position: relative;
-      width: 100%;
-      height: 88vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    video {
+      max-width: 90vw;
+      max-height: 85vh;
       background: black;
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    #stim-video {
-      width: 100%;
-      height: 100%;
-      object-fit: contain; /* Keeps the original video aspect ratio */
-      background: black;
-    }
-
-    #play-button {
-      position: absolute;
-      z-index: 10;
-      padding: 18px 36px;
-      font-size: 24px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      background: white;
-      color: black;
-      font-weight: bold;
-    }
-
-    #scale-panel {
-      height: 88vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-
-    #scale-title {
-      font-size: 24px;
-      margin-bottom: 24px;
-      font-weight: bold;
-    }
-
-    #scale-container {
-      position: relative;
-      width: 120px;
-      height: 68vh;
-    }
-
-    #scale-axis {
-      position: absolute;
-      left: 58px;
-      top: 0;
-      width: 4px;
-      height: 100%;
-      background: #777;
-      border-radius: 4px;
-    }
-
-    #positive-fill,
-    #negative-fill {
-      position: absolute;
-      left: 58px;
-      width: 4px;
-      border-radius: 4px;
-    }
-
-    #positive-fill {
-      background: #3fa7ff;
-      bottom: 50%;
-      height: 0%;
-    }
-
-    #negative-fill {
-      background: #ff8c42;
-      top: 50%;
-      height: 0%;
-    }
-
-    #zero-tick {
-      position: absolute;
-      left: 42px;
-      top: 50%;
-      width: 36px;
-      height: 3px;
-      background: white;
-      transform: translateY(-50%);
-    }
-
-    .major-tick {
-      position: absolute;
-      left: 48px;
-      width: 24px;
-      height: 2px;
-      background: white;
-      transform: translateY(-50%);
-    }
-
-    #tick-plus {
-      top: 0%;
-    }
-
-    #tick-minus {
-      top: 100%;
-    }
-
-    .scale-label {
-      position: absolute;
-      left: 82px;
-      transform: translateY(-50%);
-      font-size: 16px;
-      white-space: nowrap;
-    }
-
-    #label-plus {
-      top: 0%;
-    }
-
-    #label-zero {
-      top: 50%;
-    }
-
-    #label-minus {
-      top: 100%;
-    }
-
-    #dominance-handle {
-      position: absolute;
-      left: 45px;
-      top: calc(50% - 15px);
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      background: white;
-      border: 3px solid #222;
-      box-sizing: border-box;
-      transition: top 80ms linear, background 80ms linear;
-    }
-
-    #current-value {
-      margin-top: 26px;
-      font-size: 26px;
-      font-weight: bold;
-    }
-
-    #instructions {
-      margin-top: 18px;
-      font-size: 15px;
-      line-height: 1.35;
-      color: #ddd;
-      text-align: center;
-      max-width: 240px;
-    }
-
-    #abort-message {
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #111;
-      color: white;
-      font-family: Arial, sans-serif;
-      font-size: 28px;
-      text-align: center;
     }
   </style>
 </head>
@@ -285,590 +36,83 @@
 
 <script>
   /*
-    =========================================================
-    CHANGE THIS PATH TO YOUR VIDEO FILE
-    =========================================================
-    Example:
+    Cambia questo percorso con il tuo video.
+    Può essere un file locale nella cartella dell'esperimento:
     const VIDEO_FILE = "stimuli/filmato.mp4";
+
+    Oppure un link diretto a un file .mp4:
+    const VIDEO_FILE = "https://example.com/filmato.mp4";
   */
-const subject_id = jsPsych.randomization.randomID(10);
-const filename = `${subject_id}.json`;
-  
   const VIDEO_FILE = "filmato.mp4";
+
+  const subject_id = jsPsych.randomization.randomID(10);
+  const filename = `${subject_id}.json`;
+
+  var timeline = [];
 
   const jsPsych = initJsPsych({
     on_finish: function() {
-      document.body.classList.remove("hide-cursor");
-
-      /*
-        Displays the data at the end.
-        For actual data collection, you may want to save or send the data instead.
-      */
       jsPsych.data.displayData();
-
-      // Alternative local save options:
-      // jsPsych.data.get().localSave("json", "dominance_video_task_data.json");
-      // jsPsych.data.get().localSave("csv", "dominance_video_task_data.csv");
     }
   });
 
-  /*
-    =========================================================
-    CUSTOM PLUGIN: DOMINANCE VIDEO
-    =========================================================
-  */
-
-  const jsPsychDominanceVideo = (function() {
-
-    const info = {
-      name: "dominance-video",
-      version: "1.2.0",
-      parameters: {
-        stimulus: {
-          type: "VIDEO",
-          default: undefined
-        },
-        initial_value: {
-          type: "INT",
-          default: 0
-        },
-        step: {
-          type: "INT",
-          default: 20
-        },
-        min_value: {
-          type: "INT",
-          default: -100
-        },
-        max_value: {
-          type: "INT",
-          default: 100
-        },
-        repeat_interval_ms: {
-          type: "INT",
-          default: 250
-        }
-      },
-      data: {
-        stimulus: { type: "STRING" },
-        final_dominance: { type: "INT" },
-        dominance_events_json: { type: "STRING" },
-        media_events_json: { type: "STRING" },
-        video_duration: { type: "FLOAT" },
-        n_dominance_changes: { type: "INT" },
-        trial_end_reason: { type: "STRING" },
-        aborted_by_esc: { type: "BOOL" },
-        repeat_interval_ms: { type: "INT" }
-      }
-    };
-
-    class DominanceVideoPlugin {
-      constructor(jsPsych) {
-        this.jsPsych = jsPsych;
-      }
-
-      trial(display_element, trial) {
-        let dominance = trial.initial_value;
-        let dominanceEvents = [];
-        let mediaEvents = [];
-
-        let trialStartTime = performance.now();
-        let videoStartWallTime = null;
-        let lastChangeWallTime = null;
-        let videoStarted = false;
-        let trialEnded = false;
-
-        let heldKey = null;
-        let holdInterval = null;
-
-        const repeatIntervalMs = trial.repeat_interval_ms;
-
-        display_element.innerHTML = `
-          <div id="dominance-task">
-            <div id="video-panel">
-              <video id="stim-video" preload="auto" playsinline>
-                <source src="${trial.stimulus}" type="video/mp4">
-                Your browser does not support the video tag.
-              </video>
-
-              <button id="play-button">PLAY</button>
-            </div>
-
-            <div id="scale-panel">
-              <div id="scale-title">Dominance</div>
-
-              <div id="scale-container">
-                <div id="scale-axis"></div>
-
-                <div id="positive-fill"></div>
-                <div id="negative-fill"></div>
-
-                <div id="zero-tick"></div>
-                <div id="tick-plus" class="major-tick"></div>
-                <div id="tick-minus" class="major-tick"></div>
-
-                <div id="label-plus" class="scale-label">+100<br>In control</div>
-                <div id="label-zero" class="scale-label">0</div>
-                <div id="label-minus" class="scale-label">-100<br>Overwhelmed</div>
-
-                <div id="dominance-handle"></div>
-              </div>
-
-              <div id="current-value">0</div>
-
-              <div id="instructions">
-                Arrow up: more in control<br>
-                Arrow down: more overwhelmed<br><br>
-                Keep a key pressed to move continuously.<br>
-                ESC: interrupt the experiment.
-              </div>
-            </div>
-          </div>
-        `;
-
-        const video = display_element.querySelector("#stim-video");
-        const playButton = display_element.querySelector("#play-button");
-        const handle = display_element.querySelector("#dominance-handle");
-        const positiveFill = display_element.querySelector("#positive-fill");
-        const negativeFill = display_element.querySelector("#negative-fill");
-        const currentValue = display_element.querySelector("#current-value");
-
-        function clamp(value, min, max) {
-          return Math.min(Math.max(value, min), max);
-        }
-
-        function valueToPercentFromTop(value) {
-          /*
-            +100 -> 0%
-               0 -> 50%
-            -100 -> 100%
-          */
-          return ((trial.max_value - value) / (trial.max_value - trial.min_value)) * 100;
-        }
-
-        function updateScale() {
-          const percent = valueToPercentFromTop(dominance);
-
-          handle.style.top = `calc(${percent}% - 15px)`;
-
-          currentValue.textContent = dominance > 0 ? `+${dominance}` : `${dominance}`;
-
-          if (dominance > 0) {
-            positiveFill.style.bottom = "50%";
-            positiveFill.style.height = `${50 - percent}%`;
-            negativeFill.style.height = "0%";
-            handle.style.background = "#3fa7ff";
-          } else if (dominance < 0) {
-            positiveFill.style.height = "0%";
-            negativeFill.style.top = "50%";
-            negativeFill.style.height = `${percent - 50}%`;
-            handle.style.background = "#ff8c42";
-          } else {
-            positiveFill.style.height = "0%";
-            negativeFill.style.height = "0%";
-            handle.style.background = "white";
-          }
-        }
-
-        function nowFromTrialStart() {
-          return performance.now() - trialStartTime;
-        }
-
-        function nowFromVideoStart() {
-          if (videoStartWallTime === null) {
-            return null;
-          }
-
-          return performance.now() - videoStartWallTime;
-        }
-
-        function logMediaEvent(eventType) {
-          mediaEvents.push({
-            event_type: eventType,
-            video_time_sec: Number(video.currentTime.toFixed(4)),
-            time_since_trial_start_ms: Math.round(nowFromTrialStart()),
-            time_since_video_start_ms: nowFromVideoStart() === null ? null : Math.round(nowFromVideoStart())
-          });
-        }
-
-        function logDominanceChange(key, oldValue, newValue) {
-          const now = performance.now();
-
-          dominanceEvents.push({
-            event_type: "dominance_change",
-            key: key,
-            old_value: oldValue,
-            value: newValue,
-            video_time_sec: Number(video.currentTime.toFixed(4)),
-            time_since_trial_start_ms: Math.round(now - trialStartTime),
-            time_since_video_start_ms: videoStartWallTime === null ? null : Math.round(now - videoStartWallTime),
-            time_since_last_change_ms: lastChangeWallTime === null ? null : Math.round(now - lastChangeWallTime)
-          });
-
-          lastChangeWallTime = now;
-        }
-
-        function canRespond() {
-          return videoStarted && !video.paused && !video.ended && !trialEnded;
-        }
-
-        function applyDominanceStep(key) {
-          if (!canRespond()) {
-            return;
-          }
-
-          const oldValue = dominance;
-
-          if (key === "ArrowUp") {
-            dominance = clamp(dominance + trial.step, trial.min_value, trial.max_value);
-          }
-
-          if (key === "ArrowDown") {
-            dominance = clamp(dominance - trial.step, trial.min_value, trial.max_value);
-          }
-
-          if (dominance !== oldValue) {
-            updateScale();
-            logDominanceChange(key, oldValue, dominance);
-          }
-        }
-
-        function stopHeldKey() {
-          heldKey = null;
-
-          if (holdInterval !== null) {
-            clearInterval(holdInterval);
-            holdInterval = null;
-          }
-        }
-
-        function startHeldKey(key) {
-          if (!canRespond()) {
-            return;
-          }
-
-          /*
-            If the same key is already being held down,
-            do not restart the timer.
-          */
-          if (heldKey === key && holdInterval !== null) {
-            return;
-          }
-
-          stopHeldKey();
-
-          heldKey = key;
-
-          /*
-            First change happens immediately.
-          */
-          applyDominanceStep(key);
-
-          /*
-            Further changes happen while the key remains pressed.
-          */
-          holdInterval = setInterval(() => {
-            applyDominanceStep(key);
-          }, repeatIntervalMs);
-        }
-
-        function buildTrialData(reason, abortedByEsc) {
-          return {
-            stimulus: trial.stimulus,
-            final_dominance: dominance,
-            dominance_events_json: JSON.stringify(dominanceEvents),
-            media_events_json: JSON.stringify(mediaEvents),
-            video_duration: Number.isFinite(video.duration) ? video.duration : null,
-            n_dominance_changes: dominanceEvents.filter(e => e.event_type === "dominance_change").length,
-            trial_end_reason: reason,
-            aborted_by_esc: abortedByEsc,
-            repeat_interval_ms: repeatIntervalMs
-          };
-        }
-
-        function cleanup() {
-          stopHeldKey();
-
-          document.body.classList.remove("hide-cursor");
-
-          window.removeEventListener("keydown", onKeyDown, true);
-          window.removeEventListener("keyup", onKeyUp, true);
-          document.removeEventListener("fullscreenchange", onFullscreenChange);
-        }
-
-        function endTrial(reason = "video_ended") {
-          if (trialEnded) {
-            return;
-          }
-
-          trialEnded = true;
-
-          cleanup();
-
-          const trialData = buildTrialData(reason, false);
-
-          display_element.innerHTML = "";
-
-          this.jsPsych.finishTrial(trialData);
-        }
-
-        endTrial = endTrial.bind(this);
-
-        function abortExperimentByEsc(source = "escape_key") {
-          if (trialEnded) {
-            return;
-          }
-
-          trialEnded = true;
-
-          try {
-            video.pause();
-          } catch (err) {}
-
-          dominanceEvents.push({
-            event_type: "experiment_aborted",
-            source: source,
-            value: dominance,
-            video_time_sec: Number(video.currentTime.toFixed(4)),
-            time_since_trial_start_ms: Math.round(performance.now() - trialStartTime),
-            time_since_video_start_ms: videoStartWallTime === null ? null : Math.round(performance.now() - videoStartWallTime),
-            time_since_last_change_ms: lastChangeWallTime === null ? null : Math.round(performance.now() - lastChangeWallTime)
-          });
-
-          cleanup();
-
-          const trialData = buildTrialData("aborted_by_esc", true);
-
-          display_element.innerHTML = `
-            <div id="abort-message">
-              Experiment interrupted.
-            </div>
-          `;
-
-          /*
-            Stops the whole remaining jsPsych timeline.
-          */
-          this.jsPsych.abortExperiment("Experiment interrupted.", trialData);
-        }
-
-        abortExperimentByEsc = abortExperimentByEsc.bind(this);
-
-        function onKeyDown(e) {
-          if (trialEnded) {
-            return;
-          }
-
-          if (e.key === "Escape") {
-            e.preventDefault();
-            abortExperimentByEsc("escape_key");
-            return;
-          }
-
-          if (e.key !== "ArrowUp" && e.key !== "ArrowDown") {
-            return;
-          }
-
-          e.preventDefault();
-
-          /*
-            We do not rely on browser key repeat.
-            Continuous change is controlled by setInterval.
-          */
-          startHeldKey(e.key);
-        }
-
-        function onKeyUp(e) {
-          if (e.key === heldKey) {
-            stopHeldKey();
-          }
-        }
-
-        function onFullscreenChange() {
-          /*
-            In many browsers, ESC is first used to exit fullscreen.
-            If the participant exits fullscreen during the video,
-            the experiment is interrupted.
-          */
-          if (!trialEnded && videoStarted && !document.fullscreenElement) {
-            abortExperimentByEsc("fullscreen_exit");
-          }
-        }
-
-        updateScale();
-
-        window.addEventListener("keydown", onKeyDown, true);
-        window.addEventListener("keyup", onKeyUp, true);
-        document.addEventListener("fullscreenchange", onFullscreenChange);
-
-        video.addEventListener("waiting", () => {
-          logMediaEvent("video_waiting");
-        });
-
-        video.addEventListener("stalled", () => {
-          logMediaEvent("video_stalled");
-        });
-
-        video.addEventListener("playing", () => {
-          logMediaEvent("video_playing");
-        });
-
-        video.addEventListener("pause", () => {
-          if (!video.ended && !trialEnded) {
-            logMediaEvent("video_pause");
-          }
-        });
-
-        video.addEventListener("ended", () => {
-          logMediaEvent("video_ended");
-          endTrial("video_ended");
-        });
-
-        playButton.addEventListener("click", async () => {
-          playButton.disabled = true;
-
-          try {
-            await video.play();
-
-            videoStarted = true;
-            videoStartWallTime = performance.now();
-            lastChangeWallTime = videoStartWallTime;
-
-            playButton.style.display = "none";
-
-            /*
-              The mouse cursor disappears only after the movie has actually started.
-            */
-            document.body.classList.add("hide-cursor");
-
-            dominanceEvents.push({
-              event_type: "video_start",
-              value: dominance,
-              video_time_sec: Number(video.currentTime.toFixed(4)),
-              time_since_trial_start_ms: Math.round(videoStartWallTime - trialStartTime),
-              time_since_video_start_ms: 0,
-              time_since_last_change_ms: null
-            });
-
-          } catch (err) {
-            playButton.disabled = false;
-            playButton.textContent = "CLICK TO PLAY";
-            document.body.classList.remove("hide-cursor");
-            console.error("Video playback failed:", err);
-          }
-        });
-      }
-    }
-
-    DominanceVideoPlugin.info = info;
-
-    return DominanceVideoPlugin;
-  })();
-
-  /*
-    =========================================================
-    TIMELINE
-    =========================================================
-  */
-
-  var timeline = [];
   const preload = {
     type: jsPsychPreload,
     video: [VIDEO_FILE],
     show_progress_bar: true,
-    message: "Loading movie..."
+    message: "Caricamento del video..."
   };
 
   const enter_fullscreen = {
     type: jsPsychFullscreen,
     fullscreen_mode: true,
     message: `
-      <p>The task will start in fullscreen mode.</p>
-      <p>Please keep the browser in fullscreen mode until the task is completed.</p>
+      <p>Il video verrà presentato a schermo intero.</p>
+      <p>Premi il pulsante qui sotto per iniziare.</p>
     `,
-    button_label: "Start"
+    button_label: "Inizia"
   };
 
-  const instructions_page = {
-    type: jsPsychHtmlButtonResponse,
-    stimulus: `
-      <div id="instruction-page">
-        <div id="instruction-box">
-          <h1>Instructions</h1>
-
-          <p>
-            In this task, you will watch a short movie and continuously rate your
-            momentary feeling of <strong>dominance</strong>.
-          </p>
-
-          <p>
-            Dominance refers to the extent to which you feel in control or,
-            conversely, overwhelmed during the movie.
-          </p>
-
-          <ul>
-            <li>
-              Use the <strong>up arrow</strong> to increase the dominance rating
-              when you feel more in control.
-            </li>
-
-            <li>
-              Use the <strong>down arrow</strong> to decrease the dominance rating
-              when you feel more overwhelmed.
-            </li>
-
-            <li>
-              You can press the keys repeatedly or keep a key pressed to move the
-              rating continuously.
-            </li>
-
-            <li>
-              The scale ranges from <strong>+100</strong> to <strong>-100</strong>.
-            </li>
-
-            <li>
-              At the beginning, the rating is set to <strong>0</strong>.
-            </li>
-          </ul>
-
-          <p>
-            On the next screen, the movie will initially be paused.
-            Press <strong>PLAY</strong> to start the movie and begin the rating.
-          </p>
-
-          <p>
-            Press <strong>ESC</strong> if you need to interrupt the experiment.
-          </p>
-
-          <div id="instruction-button-container"></div>
-        </div>
-      </div>
-    `,
-    choices: ["Continue"]
-  };
-
-  const dominance_trial = {
-    type: jsPsychDominanceVideo,
-    stimulus: VIDEO_FILE,
-    initial_value: 0,
-    step: 20,
-    min_value: -100,
-    max_value: 100,
+  const video_trial = {
+    type: jsPsychVideoKeyboardResponse,
+    stimulus: [VIDEO_FILE],
 
     /*
-      How often the value changes when the participant keeps
-      the up/down arrow pressed.
-
-      250 ms = reasonably controllable.
-      150 ms = faster.
-      300/400 ms = slower.
+      Mostra i controlli nativi del browser.
+      Il partecipante può premere PLAY direttamente sul video.
     */
-    repeat_interval_ms: 120
+    controls: true,
+
+    /*
+      Il video NON parte automaticamente.
+    */
+    autoplay: false,
+
+    /*
+      Non sono richieste risposte da tastiera.
+    */
+    choices: "NO_KEYS",
+
+    /*
+      Il trial termina quando il video finisce.
+    */
+    trial_ends_after_video: true,
+
+    prompt: `
+      <p style="color:white; font-size:20px;">
+        Premi PLAY per avviare il video.
+      </p>
+    `,
+
+    data: {
+      task: "simple_video_viewing",
+      video_file: VIDEO_FILE
+    }
   };
 
   const exit_fullscreen = {
     type: jsPsychFullscreen,
-    fullscreen_mode: false,
-    delay_after: 0
+    fullscreen_mode: false
   };
 
   const save_data = {
@@ -879,8 +123,7 @@ const filename = `${subject_id}.json`;
   data_string: ()=>jsPsych.data.get().json()
 };
 
-  timeline.push(preload,enter_fullscreen,instructions_page,dominance_trial,exit_fullscreen,save_data);
-jsPsych.run(timeline)
-
+  timeline.push(preload,enter_fullscreen,video_trial,exit_fullscreen,save_data);
+  jsPsych.run(timeline)
 </script>
 </html>
