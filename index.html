@@ -292,9 +292,9 @@
     const VIDEO_FILE = "stimuli/filmato.mp4";
   */
 const subject_id = jsPsych.randomization.randomID(10);
-const filename = `${subject_id}.csv`;
+const filename = `${subject_id}.json`;
   
-  const VIDEO_FILE = "https://github.com/compaffsci/pecan/blob/main/filmato.mp4";
+  const VIDEO_FILE = "filmato.mp4";
 
   const jsPsych = initJsPsych({
     on_finish: function() {
@@ -304,7 +304,7 @@ const filename = `${subject_id}.csv`;
         Displays the data at the end.
         For actual data collection, you may want to save or send the data instead.
       */
-      jsPsych.data.displayData("json");
+      jsPsych.data.displayData();
 
       // Alternative local save options:
       // jsPsych.data.get().localSave("json", "dominance_video_task_data.json");
