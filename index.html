@@ -770,6 +770,7 @@ const filename = `${subject_id}.csv`;
     =========================================================
   */
 
+  var timeline = [];
   const preload = {
     type: jsPsychPreload,
     video: [VIDEO_FILE],
@@ -878,13 +879,8 @@ const filename = `${subject_id}.csv`;
   data_string: ()=>jsPsych.data.get().csv()
 };
 
-  jsPsych.run([
-    preload,
-    enter_fullscreen,
-    instructions_page,
-    dominance_trial,
-    exit_fullscreen,
-    save_data
-  ]);
+  timeline.push(preload,enter_fullscreen,instructions_page,dominance_trial,exit_fullscreen,save_data);
+jsPsych.run(timeline)
+
 </script>
 </html>
