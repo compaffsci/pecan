@@ -876,7 +876,7 @@ const filename = `${subject_id}.csv`;
   action: "save",
   experiment_id: "uU4CHDW9KZ8J",
   filename: filename,
-  data_string: ()=>jsPsych.data.get().csv()
+  data_string: ()=>jsPsych.data.get().json()
 };
 
   timeline.push(preload,enter_fullscreen,instructions_page,dominance_trial,exit_fullscreen,save_data);
