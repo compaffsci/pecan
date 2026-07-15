@@ -115,15 +115,7 @@
     fullscreen_mode: false
   };
 
-  const save_data = {
-  type: jsPsychPipe,
-  action: "save",
-  experiment_id: "uU4CHDW9KZ8J",
-  filename: filename,
-  data_string: ()=>jsPsych.data.get().json()
-};
-
-  timeline.push(preload,enter_fullscreen,video_trial,exit_fullscreen,save_data);
+  timeline.push(preload,enter_fullscreen,video_trial,exit_fullscreen);
   jsPsych.run(timeline)
 </script>
 </html>
