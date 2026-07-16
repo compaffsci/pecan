@@ -1,124 +1,234 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <title>Simple Video Task</title>
+    <meta charset="UTF-8">
+    <title>Esperimento Emozioni</title>
+    
+    <script src="https://unpkg.com/jspsych@7.3.4"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.1.3"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-fullscreen@1.2.1"></script>
+    <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe"></script>
+    <link href="https://unpkg.com/jspsych@7.3.4/css/jspsych.css" rel="stylesheet" type="text/css" />
+    
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #222;}
+        
+        .custom-slider-container {
+            width: 100%;
+            flex: 1; 
+            min-height: 15px; 
+            background-color: #ddd; 
+            border-radius: 6px; 
+            position: relative;
+            /* Rimosso cursor: pointer; per non suggerire il click */
+            overflow: hidden; 
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+            user-select: none; 
+            transition: outline 0.1s ease-in-out;
+            outline: 2px solid transparent; 
+        }
 
-  <!-- jsPsych v8 -->
-  <script src="https://unpkg.com/jspsych@8.2.1"></script>
-  <script src="https://unpkg.com/@jspsych/plugin-preload@2.1.0"></script>
-  <script src="https://unpkg.com/@jspsych/plugin-fullscreen@2.1.0"></script>
-  <script src="https://unpkg.com/@jspsych/plugin-video-keyboard-response@2.1.0"></script>
-  <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe"></script>
+        .custom-slider-container:hover {
+            outline: 2px solid #fff; 
+        }
 
+        .custom-slider-fill {
+            height: 100%;
+            width: 0%; 
+            background-color: #ffc107; 
+            transition: width 0.1s ease-out; 
+            position: absolute; 
+            top: 0; left: 0;
+            z-index: 1;
+        }
 
-  <link href="https://unpkg.com/jspsych@8.2.1/css/jspsych.css" rel="stylesheet" type="text/css" />
+        .custom-slider-tick {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: rgba(0, 0, 0, 0.15); 
+            z-index: 2; 
+            pointer-events: none; 
+        }
 
-  <style>
-    body {
-      background: #111;
-      color: white;
-    }
+        .custom-slider-text {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+            pointer-events: none; 
+            font-family: sans-serif;
+            font-size: 15px; 
+            color: #333; 
+            z-index: 3; 
+        }
 
-    .jspsych-content {
-      max-width: 100vw;
-    }
-
-    video {
-      max-width: 90vw;
-      max-height: 85vh;
-      background: black;
-    }
-  </style>
+        .emotion-name { font-weight: bold; text-transform: capitalize; }
+        .slider-value { font-weight: bold; font-size: 15px; } 
+        
+        #sliders-container::-webkit-scrollbar { display: none; }
+        
+        .jspsych-content { color: white; }
+    </style>
 </head>
-
-<body></body>
-
+<body>
+</body>
 <script>
-  /*
-    Cambia questo percorso con il tuo video.
-    Può essere un file locale nella cartella dell'esperimento:
-    const VIDEO_FILE = "stimuli/filmato.mp4";
 
-    Oppure un link diretto a un file .mp4:
-    const VIDEO_FILE = "https://example.com/filmato.mp4";
-  */
-  const VIDEO_FILE = "filmato.mp4";
+    const subject_id = jsPsych.randomization.randomID(10);
+    const filename = `${subject_id}.csv`;
+    const jsPsych = initJsPsych({
+        on_finish: function() {
+            jsPsych.data.displayData('csv'); 
+        }
+    });
 
-  const subject_id = jsPsych.randomization.randomID(10);
-  const filename = `${subject_id}.json`;
+    const emozioni = [
+        "Ammirazione", "Divertimento", "Eccitazione", "Gioia", "Meraviglia", 
+        "Soddisfazione", "Sollievo", "Tenerezza", "Compassione", "Perplessità", 
+        "Sorpresa", "Agitazione", "Angoscia", "Delusione", "Disagio", 
+        "Disgusto", "Disprezzo", "Paura", "Rabbia", "Tristezza"
+    ];
+    
+    let slidersHTML = "";
+    emozioni.forEach(emozione => {
+        slidersHTML += `
+            <div class="custom-slider-container" data-emozione="${emozione}">
+                <div class="custom-slider-fill"></div>
+                
+                <div class="custom-slider-tick" style="left: 50%;"></div>
 
-  const jsPsych = initJsPsych({
-    on_finish: function() {
-      jsPsych.data.displayData();
-    }
-  });
+                <div class="custom-slider-text">
+                    <span class="emotion-name">${emozione}</span>
+                    <span class="slider-value">0%</span>
+                </div>
+            </div>
+        `;
+    });
 
-  const preload = {
-    type: jsPsychPreload,
-    video: [VIDEO_FILE],
-    show_progress_bar: true,
-    message: "Caricamento del video..."
-  };
+    const enter_fullscreen = {
+        type: jsPsychFullscreen,
+        fullscreen_mode: true,
+        message: '<p>L\'esperimento sta per iniziare in modalità a schermo intero per evitare distrazioni.</p>',
+        button_label: 'Passa a Schermo Intero e Inizia'
+    };
 
-  const enter_fullscreen = {
-    type: jsPsychFullscreen,
-    fullscreen_mode: true,
-    message: `
-      <p>Il video verrà presentato a schermo intero.</p>
-      <p>Premi il pulsante qui sotto per iniziare.</p>
-    `,
-    button_label: "Inizia"
-  };
+    const video_emotion_trial = {
+        type: jsPsychHtmlKeyboardResponse,
+        stimulus: `
+            <div id="experiment-container" style="display: flex; width: 100vw; height: 100vh; margin: 0; padding: 0;">
+                
+                <div id="video-container" style="flex: 0 0 80%; position: relative; display: flex; justify-content: center; align-items: center; background-color: #000; overflow: hidden;">
+                    <video id="stimulus-video" preload="auto" style="width: 100%; height: auto;">
+                        <source src="filmato.mp4" type="video/mp4">
+                        Il tuo browser non supporta il tag video.
+                    </video>
+                    <button id="play-btn" style="position: absolute; padding: 15px 30px; font-size: 24px; cursor: pointer; z-index: 10; border-radius: 8px; border: none; background-color: #4CAF50; color: white; box-shadow: 0px 4px 6px rgba(0,0,0,0.3);">
+                        PLAY
+                    </button>
+                </div>
 
-  const video_trial = {
-    type: jsPsychVideoKeyboardResponse,
-    stimulus: [VIDEO_FILE],
+                <div id="sliders-container" style="flex: 0 0 20%; display: flex; flex-direction: column; gap: 8px; justify-content: center; background-color: #000; padding: 15px 80px 15px 20px; box-sizing: border-box; opacity: 0.3; pointer-events: none; transition: opacity 0.5s ease;">
+                    ${slidersHTML}
+                </div>
 
-    /*
-      Mostra i controlli nativi del browser.
-      Il partecipante può premere PLAY direttamente sul video.
-    */
-    controls: true,
+            </div>
+        `,
+        choices: "NO_KEYS",
+        on_load: function() {
+            const video = document.getElementById('stimulus-video');
+            const playBtn = document.getElementById('play-btn');
+            const slidersContainer = document.getElementById('sliders-container');
+            const videoContainer = document.getElementById('video-container'); 
+            
+            let trialData = [];
+            let startTime = null;
+            
+            let ultimiValori = {};
+            let wheelAccumulator = {};
+            emozioni.forEach(emozione => {
+                ultimiValori[emozione] = 0;
+                wheelAccumulator[emozione] = 0;
+            });
+            
+            const sensibilitaWheel = 80; 
 
-    /*
-      Il video NON parte automaticamente.
-    */
-    autoplay: false,
+            playBtn.addEventListener('click', function() {
+                playBtn.style.display = 'none';
+                video.play();
+                
+                slidersContainer.style.opacity = '1';
+                slidersContainer.style.pointerEvents = 'auto';
 
-    /*
-      Non sono richieste risposte da tastiera.
-    */
-    choices: "NO_KEYS",
+                videoContainer.style.cursor = 'none';
+            });
 
-    /*
-      Il trial termina quando il video finisce.
-    */
-    trial_ends_after_video: true,
+            video.addEventListener('playing', function() {
+                if (startTime === null) {
+                    startTime = performance.now(); 
+                }
+            });
 
-    prompt: `
-      <p style="color:white; font-size:20px;">
-        Premi PLAY per avviare il video.
-      </p>
-    `,
+            function impostaValore(valore, sliderContainer) {
+                let larghezzaVisiva = (valore / 2) * 100;
+                sliderContainer.querySelector('.custom-slider-fill').style.width = larghezzaVisiva + '%';
+                sliderContainer.querySelector('.slider-value').textContent = larghezzaVisiva + '%';
+                
+                let emozione = sliderContainer.dataset.emozione;
+                if (valore !== ultimiValori[emozione] && startTime !== null) {
+                    ultimiValori[emozione] = valore;
+                    let currentTime = performance.now() - startTime;
+                    trialData.push({
+                        emozione: emozione,
+                        valore: valore, 
+                        timestamp_ms: Math.round(currentTime)
+                    });
+                }
+            }
 
-    data: {
-      task: "simple_video_viewing",
-      video_file: VIDEO_FILE
-    }
-  };
+            // Rimosse le funzioni e gli event listener per mousedown, mousemove e mouseup
 
-  const exit_fullscreen = {
-    type: jsPsychFullscreen,
-    fullscreen_mode: false
-  };
+            document.addEventListener('wheel', function(e) {
+                let slider = e.target.closest('.custom-slider-container');
+                if (slider) {
+                    e.preventDefault(); 
+                    
+                    let emozione = slider.dataset.emozione;
+                    wheelAccumulator[emozione] += e.deltaY;
+                    let valoreAttuale = ultimiValori[emozione];
+                    
+                    if (wheelAccumulator[emozione] > sensibilitaWheel) {
+                        valoreAttuale = Math.max(0, valoreAttuale - 1);
+                        impostaValore(valoreAttuale, slider);
+                        wheelAccumulator[emozione] = 0; 
+                    } else if (wheelAccumulator[emozione] < -sensibilitaWheel) {
+                        valoreAttuale = Math.min(2, valoreAttuale + 1);
+                        impostaValore(valoreAttuale, slider);
+                        wheelAccumulator[emozione] = 0; 
+                    }
+                }
+            }, { passive: false }); 
 
- jsPsych.run([
-    preload,
-    enter_fullscreen,
-    video_trial,
-    exit_fullscreen
-  ]);
-  
+            video.addEventListener('ended', function() {
+                jsPsych.finishTrial({
+                    emotion_tracking: JSON.stringify(trialData),
+                    video_file: "filmato.mp4"
+                });
+            });
+        }
+    };
+    
+    const save_data = {
+    type: jsPsychPipe,
+    action: "save",
+    experiment_id: "uU4CHDW9KZ8J",
+    filename: filename,
+    data_string: ()=>jsPsych.data.get().csv()
+    };
+
+    jsPsych.run([enter_fullscreen, video_emotion_trial, save_data]);
 </script>
 </html>
