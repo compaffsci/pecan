@@ -50,58 +50,33 @@
       color: white;
     }
 
+    .instruction-box {
+      max-width: 900px;
+      margin: auto;
+      text-align: left;
+      font-size: 22px;
+      line-height: 1.5;
+      color: white;
+      padding: 40px;
+      box-sizing: border-box;
+    }
+
+    .instruction-box h1 {
+      font-size: 38px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .instruction-box li {
+      margin-bottom: 14px;
+    }
+
     .jspsych-btn {
       font-size: 22px;
       padding: 14px 34px;
       border-radius: 10px;
       cursor: pointer;
     }
-
-    /*
-      =========================================================
-      INSTRUCTION PAGE
-      =========================================================
-    */
-
-    #instruction-page {
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #111;
-      color: white;
-      font-family: Arial, sans-serif;
-      box-sizing: border-box;
-      padding: 60px;
-    }
-
-    #instruction-box {
-      max-width: 900px;
-      text-align: left;
-      font-size: 22px;
-      line-height: 1.5;
-    }
-
-    #instruction-box h1 {
-      font-size: 38px;
-      margin-bottom: 30px;
-    }
-
-    #instruction-box ul {
-      margin-top: 20px;
-      margin-bottom: 30px;
-    }
-
-    #instruction-box li {
-      margin-bottom: 14px;
-    }
-
-    /*
-      =========================================================
-      DOMINANCE VIDEO TASK
-      =========================================================
-    */
 
     #dominance-task {
       width: 100vw;
@@ -285,14 +260,9 @@
     =========================================================
   */
 
-  /*
-    This ID is provided by DataPipe after creating the experiment.
-  */
   const EXPERIMENT_ID = "uU4CHDW9KZ8J";
 
   /*
-    If the video is in your GitHub repository, use a relative path.
-
     Repository structure:
     index.html
     stimuli/
@@ -301,7 +271,7 @@
   const VIDEO_FILE = "stimuli/filmato.mp4";
 
   /*
-    Set to true only while testing locally.
+    Set to true only while testing.
     In the real online experiment, keep this false.
   */
   const DEBUG_MODE = false;
@@ -324,7 +294,7 @@
 
   /*
     =========================================================
-    PARTICIPANT AND FILENAME
+    PARTICIPANT AND FILE NAMING
     =========================================================
   */
 
@@ -381,32 +351,44 @@
 
     const info = {
       name: "dominance-video",
-      version: "1.3.0",
+      version: "1.4.0",
       parameters: {
         stimulus: {
-          type: jsPsych.ParameterType.VIDEO,
+          type: "VIDEO",
           default: undefined
         },
         initial_value: {
-          type: jsPsych.ParameterType.INT,
+          type: "INT",
           default: 0
         },
         step: {
-          type: jsPsych.ParameterType.INT,
+          type: "INT",
           default: 20
         },
         min_value: {
-          type: jsPsych.ParameterType.INT,
+          type: "INT",
           default: -100
         },
         max_value: {
-          type: jsPsych.ParameterType.INT,
+          type: "INT",
           default: 100
         },
         repeat_interval_ms: {
-          type: jsPsych.ParameterType.INT,
+          type: "INT",
           default: 250
         }
+      },
+      data: {
+        stimulus: { type: "STRING" },
+        final_dominance: { type: "INT" },
+        dominance_events_json: { type: "STRING" },
+        media_events_json: { type: "STRING" },
+        video_duration: { type: "FLOAT" },
+        n_dominance_changes: { type: "INT" },
+        trial_end_reason: { type: "STRING" },
+        interrupted: { type: "BOOL" },
+        interruption_source: { type: "STRING" },
+        repeat_interval_ms: { type: "INT" }
       }
     };
 
@@ -486,11 +468,6 @@
         }
 
         function valueToPercentFromTop(value) {
-          /*
-            +100 -> 0%
-               0 -> 50%
-            -100 -> 100%
-          */
           return ((trial.max_value - value) / (trial.max_value - trial.min_value)) * 100;
         }
 
@@ -599,17 +576,10 @@
           }
 
           stopHeldKey();
-
           heldKey = key;
 
-          /*
-            First change immediately.
-          */
           applyDominanceStep(key);
 
-          /*
-            Then continue while the key is held.
-          */
           holdInterval = setInterval(() => {
             applyDominanceStep(key);
           }, repeatIntervalMs);
@@ -680,11 +650,6 @@
             time_since_last_change_ms: lastChangeWallTime === null ? null : Math.round(now - lastChangeWallTime)
           });
 
-          /*
-            Important:
-            We finish the trial instead of fully aborting jsPsych,
-            so the next DataPipe trial can still save the data to OSF.
-          */
           endTrial("interrupted", true, source);
         }
 
@@ -715,11 +680,6 @@
         }
 
         function onFullscreenChange() {
-          /*
-            In many browsers, ESC first exits fullscreen.
-            If the participant exits fullscreen after the video has started,
-            we interrupt the trial and continue to data saving.
-          */
           if (!trialEnded && videoStarted && !document.fullscreenElement) {
             interruptTrial("fullscreen_exit");
           }
@@ -765,10 +725,6 @@
             lastChangeWallTime = videoStartWallTime;
 
             playButton.style.display = "none";
-
-            /*
-              Hide the mouse cursor only after the movie has actually started.
-            */
             document.body.classList.add("hide-cursor");
 
             dominanceEvents.push({
@@ -823,55 +779,53 @@
   const instructions_page = {
     type: jsPsychHtmlButtonResponse,
     stimulus: `
-      <div id="instruction-page">
-        <div id="instruction-box">
-          <h1>Instructions</h1>
+      <div class="instruction-box">
+        <h1>Instructions</h1>
 
-          <p>
-            In this task, you will watch a short movie and continuously rate your
-            momentary feeling of <strong>dominance</strong>.
-          </p>
+        <p>
+          In this task, you will watch a short movie and continuously rate your
+          momentary feeling of <strong>dominance</strong>.
+        </p>
 
-          <p>
-            Dominance refers to the extent to which you feel in control or,
-            conversely, overwhelmed during the movie.
-          </p>
+        <p>
+          Dominance refers to the extent to which you feel in control or,
+          conversely, overwhelmed during the movie.
+        </p>
 
-          <ul>
-            <li>
-              Use the <strong>up arrow</strong> to increase the dominance rating
-              when you feel more in control.
-            </li>
+        <ul>
+          <li>
+            Use the <strong>up arrow</strong> to increase the dominance rating
+            when you feel more in control.
+          </li>
 
-            <li>
-              Use the <strong>down arrow</strong> to decrease the dominance rating
-              when you feel more overwhelmed.
-            </li>
+          <li>
+            Use the <strong>down arrow</strong> to decrease the dominance rating
+            when you feel more overwhelmed.
+          </li>
 
-            <li>
-              You can press the keys repeatedly or keep a key pressed to move the
-              rating continuously.
-            </li>
+          <li>
+            You can press the keys repeatedly or keep a key pressed to move the
+            rating continuously.
+          </li>
 
-            <li>
-              The scale ranges from <strong>+100</strong> to <strong>-100</strong>.
-            </li>
+          <li>
+            The scale ranges from <strong>+100</strong> to <strong>-100</strong>.
+          </li>
 
-            <li>
-              At the beginning, the rating is set to <strong>0</strong>.
-            </li>
-          </ul>
+          <li>
+            At the beginning, the rating is set to <strong>0</strong>.
+          </li>
+        </ul>
 
-          <p>
-            On the next screen, the movie will initially be paused.
-            Press <strong>PLAY</strong> to start the movie and begin the rating.
-          </p>
+        <p>
+          On the next screen, the movie will initially be paused.
+          Press <strong>PLAY</strong> to start the movie and begin the rating.
+        </p>
 
-          <p>
-            Press <strong>ESC</strong> if you need to interrupt the experiment.
-            If this happens, the data collected up to that point will still be saved.
-          </p>
-        </div>
+        <p>
+          Press <strong>ESC</strong> if you need to interrupt the experiment.
+          If this happens, the data collected up to that point will still be saved.
+        </p>
       </div>
     `,
     choices: ["Continue"]
@@ -884,22 +838,9 @@
     step: 20,
     min_value: -100,
     max_value: 100,
-
-    /*
-      How often the value changes when the participant keeps
-      the up/down arrow pressed.
-
-      250 ms = reasonably controllable.
-      150 ms = faster.
-      300/400 ms = slower.
-    */
     repeat_interval_ms: 250
   };
 
-  /*
-    This trial sends the complete jsPsych data to OSF through DataPipe.
-    The data are saved as a CSV file.
-  */
   const save_data = {
     type: jsPsychPipe,
     action: "save",
@@ -915,6 +856,12 @@
       </div>
     `,
     compression: true
+  };
+
+  const exit_fullscreen = {
+    type: jsPsychFullscreen,
+    fullscreen_mode: false,
+    delay_after: 0
   };
 
   const final_message = {
@@ -947,20 +894,14 @@
     choices: ["Finish"]
   };
 
-  const exit_fullscreen = {
-    type: jsPsychFullscreen,
-    fullscreen_mode: false,
-    delay_after: 0
-  };
-
   jsPsych.run([
     preload,
     enter_fullscreen,
     instructions_page,
     dominance_trial,
     save_data,
-    final_message,
-    exit_fullscreen
+    exit_fullscreen,
+    final_message
   ]);
 </script>
 </html>
