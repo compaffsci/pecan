@@ -758,11 +758,16 @@
   */
 
   const preload = {
-    type: jsPsychPreload,
-    video: [VIDEO_FILE],
-    show_progress_bar: true,
-    message: "Loading movie..."
-  };
+  type: jsPsychPreload,
+  video: [VIDEO_FILE],
+  show_progress_bar: true,
+  message: "Loading movie...",
+  show_detailed_errors: true,
+  continue_after_error: true,
+  on_error: function(file) {
+    console.error("Preload error for:", file);
+  }
+};
 
   const enter_fullscreen = {
     type: jsPsychFullscreen,
