@@ -9,6 +9,7 @@
   <script src="https://unpkg.com/@jspsych/plugin-fullscreen@2.1.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-preload@2.1.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-html-button-response@2.1.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-survey-text@2.1.0"></script>
 
   <!-- DataPipe plugin for OSF saving -->
   <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe@0.6.0"></script>
@@ -50,33 +51,81 @@
       color: white;
     }
 
-    .instruction-box {
-      max-width: 900px;
-      margin: auto;
-      text-align: left;
-      font-size: 22px;
-      line-height: 1.5;
-      color: white;
-      padding: 40px;
-      box-sizing: border-box;
-    }
-
-    .instruction-box h1 {
-      font-size: 38px;
-      margin-bottom: 30px;
-      text-align: center;
-    }
-
-    .instruction-box li {
-      margin-bottom: 14px;
-    }
-
     .jspsych-btn {
       font-size: 22px;
       padding: 14px 34px;
       border-radius: 10px;
       cursor: pointer;
     }
+
+    /*
+      =========================================================
+      IMAGE INSTRUCTION PAGES
+      =========================================================
+    */
+
+    .image-instruction-page {
+      width: 100vw;
+      height: 100vh;
+      box-sizing: border-box;
+      padding: 30px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: #111;
+    }
+
+    .instruction-image {
+      max-width: 92vw;
+      max-height: 78vh;
+      object-fit: contain;
+      display: block;
+      margin-bottom: 28px;
+      background: white;
+    }
+
+    /*
+      =========================================================
+      CODE PAGE
+      =========================================================
+    */
+
+    .code-page {
+      width: 100vw;
+      height: 100vh;
+      box-sizing: border-box;
+      padding: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #111;
+      color: white;
+    }
+
+    .code-box {
+      max-width: 850px;
+      text-align: center;
+      font-size: 24px;
+      line-height: 1.5;
+    }
+
+    .code-box input[type="text"] {
+      font-size: 24px;
+      padding: 12px 16px;
+      width: 420px;
+      max-width: 80vw;
+      border-radius: 8px;
+      border: 2px solid white;
+      margin-top: 24px;
+      text-align: center;
+    }
+
+    /*
+      =========================================================
+      DOMINANCE VIDEO TASK
+      =========================================================
+    */
 
     #dominance-task {
       width: 100vw;
@@ -263,12 +312,25 @@
   const EXPERIMENT_ID = "uU4CHDW9KZ8J";
 
   /*
+    Video hosted on your server.
+  */
+  const VIDEO_FILE = "https://www.sane-elab.eu/pecan/TheFather_run2_part1_wcross.mp4";
+
+  /*
+    Instruction images.
+
     Repository structure:
     index.html
     stimuli/
-      filmato.mp4
+      instructions_1.png
+      instructions_2.png
+      instructions_3.png
   */
-  const VIDEO_FILE = "https://www.sane-elab.eu/pecan/TheFather_run2_part1_wcross.mp4";
+  const INSTRUCTION_IMAGES = [
+    "stimuli/instructions_1.png",
+    "stimuli/instructions_2.png",
+    "stimuli/instructions_3.png"
+  ];
 
   /*
     Set to true only while testing.
@@ -758,82 +820,113 @@
   */
 
   const preload = {
-  type: jsPsychPreload,
-  video: [VIDEO_FILE],
-  show_progress_bar: true,
-  message: "Loading movie...",
-  show_detailed_errors: true,
-  continue_after_error: true,
-  on_error: function(file) {
-    console.error("Preload error for:", file);
-  }
-};
+    type: jsPsychPreload,
+    video: [VIDEO_FILE],
+    images: INSTRUCTION_IMAGES,
+    show_progress_bar: true,
+    message: "Caricamento dell'esperimento...",
+    show_detailed_errors: true,
+
+    /*
+      Important for externally hosted videos.
+      If the video preload fails because of CORS, the experiment continues.
+      The video will still be loaded by the browser at playback.
+    */
+    continue_after_error: true,
+
+    on_error: function(file) {
+      console.error("Preload error for:", file);
+    }
+  };
 
   const enter_fullscreen = {
     type: jsPsychFullscreen,
     fullscreen_mode: true,
     message: `
       <div class="message-box">
-        <p>The task will start in fullscreen mode.</p>
-        <p>Please keep the browser in fullscreen mode until the task is completed.</p>
+        <p>L'esperimento verrà avviato in modalità a schermo intero.</p>
+        <p>Per favore, mantieni il browser in modalità a schermo intero fino alla fine del task.</p>
       </div>
     `,
-    button_label: "Start"
+    button_label: "Inizia"
   };
 
-  const instructions_page = {
-    type: jsPsychHtmlButtonResponse,
-    stimulus: `
-      <div class="instruction-box">
-        <h1>Instructions</h1>
+  const instruction_pages = INSTRUCTION_IMAGES.map(function(imagePath, index) {
+    return {
+      type: jsPsychHtmlButtonResponse,
+      stimulus: `
+        <div class="image-instruction-page">
+          <img class="instruction-image" src="${imagePath}" alt="Istruzioni pagina ${index + 1}">
+        </div>
+      `,
+      choices: ["Continua"],
+      data: {
+        task: "instruction_page",
+        instruction_page_number: index + 1,
+        instruction_image: imagePath
+      },
+      on_finish: function(data) {
+        /*
+          jsPsychHtmlButtonResponse already saves response time in data.rt.
+          Here we duplicate it in a clearer field.
+        */
+        data.instruction_rt_ms = data.rt;
+      }
+    };
+  });
 
-        <p>
-          In this task, you will watch a short movie and continuously rate your
-          momentary feeling of <strong>dominance</strong>.
-        </p>
-
-        <p>
-          Dominance refers to the extent to which you feel in control or,
-          conversely, overwhelmed during the movie.
-        </p>
-
-        <ul>
-          <li>
-            Use the <strong>up arrow</strong> to increase the dominance rating
-            when you feel more in control.
-          </li>
-
-          <li>
-            Use the <strong>down arrow</strong> to decrease the dominance rating
-            when you feel more overwhelmed.
-          </li>
-
-          <li>
-            You can press the keys repeatedly or keep a key pressed to move the
-            rating continuously.
-          </li>
-
-          <li>
-            The scale ranges from <strong>+100</strong> to <strong>-100</strong>.
-          </li>
-
-          <li>
-            At the beginning, the rating is set to <strong>0</strong>.
-          </li>
-        </ul>
-
-        <p>
-          On the next screen, the movie will initially be paused.
-          Press <strong>PLAY</strong> to start the movie and begin the rating.
-        </p>
-
-        <p>
-          Press <strong>ESC</strong> if you need to interrupt the experiment.
-          If this happens, the data collected up to that point will still be saved.
-        </p>
+  const researcher_code_page = {
+    type: jsPsychSurveyText,
+    preamble: `
+      <div class="code-page">
+        <div class="code-box">
+          <p>Inserisci qui sotto il codice che ti è stato fornito dai ricercatori</p>
+        </div>
       </div>
     `,
-    choices: ["Continue"]
+    questions: [
+      {
+        prompt: "",
+        name: "researcher_code",
+        required: true,
+        rows: 1,
+        columns: 40,
+        placeholder: "Codice"
+      }
+    ],
+    button_label: "Continua",
+    data: {
+      task: "researcher_code_entry"
+    },
+    on_load: function() {
+      /*
+        Move the survey form inside the visual layout created in the preamble.
+        This keeps the page centered and visually clean.
+      */
+      const form = document.querySelector("#jspsych-survey-text-form");
+      const codeBox = document.querySelector(".code-box");
+
+      if (form && codeBox) {
+        codeBox.appendChild(form);
+      }
+    },
+    on_finish: function(data) {
+      let code = "";
+
+      if (data.response && data.response.researcher_code !== undefined) {
+        code = String(data.response.researcher_code).trim();
+      }
+
+      data.researcher_code = code;
+
+      /*
+        Add the code as a global property so it appears also in subsequent rows,
+        including the dominance trial and the DataPipe save trial.
+      */
+      jsPsych.data.addProperties({
+        researcher_code: code
+      });
+    }
   };
 
   const dominance_trial = {
@@ -856,8 +949,8 @@
     },
     wait_message: `
       <div class="message-box">
-        <p>Saving data.</p>
-        <p>Please do not close this page.</p>
+        <p>Salvataggio dei dati in corso.</p>
+        <p>Per favore, non chiudere questa pagina.</p>
       </div>
     `,
     compression: true
@@ -881,28 +974,29 @@
       if (pipeTrial && pipeTrial.success === true) {
         return `
           <div class="message-box">
-            <h2>Thank you!</h2>
-            <p>The task is complete and the data have been saved successfully.</p>
-            <p>You can now close this window.</p>
+            <h2>Grazie!</h2>
+            <p>Il task è terminato e i dati sono stati salvati correttamente.</p>
+            <p>Puoi chiudere questa finestra.</p>
           </div>
         `;
       } else {
         return `
           <div class="message-box">
-            <h2>Warning</h2>
-            <p>The task is complete, but there may have been a problem saving the data.</p>
-            <p>Please contact the experimenter before closing this window.</p>
+            <h2>Attenzione</h2>
+            <p>Il task è terminato, ma potrebbe esserci stato un problema nel salvataggio dei dati.</p>
+            <p>Per favore, contatta lo sperimentatore prima di chiudere questa finestra.</p>
           </div>
         `;
       }
     },
-    choices: ["Finish"]
+    choices: ["Fine"]
   };
 
   jsPsych.run([
     preload,
     enter_fullscreen,
-    instructions_page,
+    ...instruction_pages,
+    researcher_code_page,
     dominance_trial,
     save_data,
     exit_fullscreen,
