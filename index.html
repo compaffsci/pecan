@@ -348,7 +348,8 @@
 
   const EXPERIMENT_ID = "uU4CHDW9KZ8J";
 
-  const VIDEO_FILE = "https://www.sane-elab.eu/pecan/TheFather_run2_part1_wcross.mp4";
+  const VIDEO_PART1_FILE = "https://www.sane-elab.eu/pecan/TheFather_run2_part1_wcross.mp4";
+  const VIDEO_PART2_FILE = "https://www.sane-elab.eu/pecan/TheFather_run2_part2_wcross.mp4";
 
   const INSTRUCTION_IMAGES = [
     "stimuli/instructions_1.png",
@@ -357,6 +358,14 @@
   ];
 
   const DEBUG_MODE = false;
+
+  /*
+    This flag is used if the participant interrupts the experiment
+    with ESC or by exiting fullscreen. If part 1 is interrupted,
+    part 2 will be skipped, but the data collected up to that point
+    will still be saved.
+  */
+  let experimentInterrupted = false;
 
   /*
     =========================================================
@@ -405,17 +414,28 @@
     .toISOString()
     .replace(/[:.]/g, "-");
 
-  const dataFilename =
-    "dominance_" +
+  const filenameBase =
     sanitizeForFilename(participantID) + "_" +
     sanitizeForFilename(sessionID) + "_" +
-    timestamp + ".csv";
+    timestamp;
+
+  /*
+    Two different filenames are needed because DataPipe/OSF cannot
+    overwrite a file with the same name.
+
+    The first file is saved immediately after part 1.
+    The second file is saved after part 2 and contains the complete dataset.
+  */
+  const dataFilenamePart1 = "dominance_part1_" + filenameBase + ".csv";
+  const dataFilenameComplete = "dominance_complete_" + filenameBase + ".csv";
 
   jsPsych.data.addProperties({
     participant_id: participantID,
     session_id: sessionID,
-    video_file: VIDEO_FILE,
-    data_filename: dataFilename,
+    video_part1_file: VIDEO_PART1_FILE,
+    video_part2_file: VIDEO_PART2_FILE,
+    data_filename_part1: dataFilenamePart1,
+    data_filename_complete: dataFilenameComplete,
     experiment_url: window.location.href,
     screen_width: window.screen.width,
     screen_height: window.screen.height,
@@ -440,6 +460,10 @@
         stimulus: {
           type: "VIDEO",
           default: undefined
+        },
+        video_part: {
+          type: "STRING",
+          default: null
         },
         initial_value: {
           type: "INT",
@@ -672,7 +696,9 @@
         function buildTrialData(reason, interrupted, interruptionSource) {
           return {
             task: "dominance_video_rating",
+            video_part: trial.video_part,
             stimulus: trial.stimulus,
+            video_file: trial.stimulus,
             final_dominance: dominance,
             dominance_events_json: JSON.stringify(dominanceEvents),
             media_events_json: JSON.stringify(mediaEvents),
@@ -717,6 +743,8 @@
           if (trialEnded) {
             return;
           }
+
+          experimentInterrupted = true;
 
           try {
             video.pause();
@@ -843,7 +871,7 @@
 
   const preload = {
     type: jsPsychPreload,
-    video: [VIDEO_FILE],
+    video: [VIDEO_PART1_FILE, VIDEO_PART2_FILE],
     images: INSTRUCTION_IMAGES,
     show_progress_bar: true,
     message: "Caricamento dell'esperimento...",
@@ -943,9 +971,10 @@
     }
   };
 
-  const dominance_trial = {
+  const dominance_trial_part1 = {
     type: jsPsychDominanceVideo,
-    stimulus: VIDEO_FILE,
+    stimulus: VIDEO_PART1_FILE,
+    video_part: "part1",
     initial_value: 0,
     step: 20,
     min_value: -100,
@@ -953,21 +982,81 @@
     repeat_interval_ms: 125
   };
 
-  const save_data = {
+  const save_data_part1 = {
     type: jsPsychPipe,
     action: "save",
     experiment_id: EXPERIMENT_ID,
-    filename: dataFilename,
+    filename: dataFilenamePart1,
     data_string: function() {
       return jsPsych.data.get().csv();
     },
     wait_message: `
       <div class="message-box">
-        <p>Salvataggio dei dati in corso.</p>
+        <p>Salvataggio dei dati della prima parte in corso.</p>
         <p>Per favore, non chiudere questa pagina.</p>
       </div>
     `,
     compression: true
+  };
+
+  const between_parts_page = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: `
+      <div class="message-box">
+        <p>Ha completato la prima parte della visione del film!</p>
+        <p>
+          Quando si sentirà pronto proceda alla visione della seconda e ultima parte.
+          Clicchi <strong>Continua</strong> per procedere.
+        </p>
+      </div>
+    `,
+    choices: ["Continua"],
+    data: {
+      task: "between_parts_page"
+    }
+  };
+
+  const dominance_trial_part2 = {
+    type: jsPsychDominanceVideo,
+    stimulus: VIDEO_PART2_FILE,
+    video_part: "part2",
+    initial_value: 0,
+    step: 20,
+    min_value: -100,
+    max_value: 100,
+    repeat_interval_ms: 125
+  };
+
+  const save_data_complete = {
+    type: jsPsychPipe,
+    action: "save",
+    experiment_id: EXPERIMENT_ID,
+    filename: dataFilenameComplete,
+    data_string: function() {
+      return jsPsych.data.get().csv();
+    },
+    wait_message: `
+      <div class="message-box">
+        <p>Salvataggio dei dati finali in corso.</p>
+        <p>Per favore, non chiudere questa pagina.</p>
+      </div>
+    `,
+    compression: true
+  };
+
+  const part2_block = {
+    timeline: [
+      between_parts_page,
+      dominance_trial_part2,
+      save_data_complete
+    ],
+    conditional_function: function() {
+      /*
+        If the participant interrupts the experiment during part 1,
+        part 2 is skipped. The part 1 data have already been saved.
+      */
+      return !experimentInterrupted;
+    }
   };
 
   const exit_fullscreen = {
@@ -1011,8 +1100,9 @@
     enter_fullscreen,
     ...instruction_pages,
     researcher_code_page,
-    dominance_trial,
-    save_data,
+    dominance_trial_part1,
+    save_data_part1,
+    part2_block,
     exit_fullscreen,
     final_message
   ]);
